@@ -88,7 +88,7 @@ bool AMPT_GameSession::HostSession(FUniqueNetIdPtr UserId, FString SessionN, FSt
 
 void AMPT_GameSession::OnCreateSessionComplete(FName SessionN, bool bWasSuccessful)
 {
-	GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Red, FString::Printf(TEXT("OnCreateSession Complete %s, %d"), *SessionN.ToString(), bWasSuccessful));
+	GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Green, FString::Printf(TEXT("OnCreateSession Complete %s, %d"), *SessionN.ToString(), bWasSuccessful));
 
 	IOnlineSubsystem* OnlineSub = IOnlineSubsystem::Get();
 
@@ -113,7 +113,7 @@ void AMPT_GameSession::OnCreateSessionComplete(FName SessionN, bool bWasSuccessf
 
 void AMPT_GameSession::OnStartOnlineGameComplete(FName SessionN, bool bWasSuccessful)
 {
-	GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Red, FString::Printf(TEXT("OnStartSession Complete %s, ùd"), *SessionN.ToString(), bWasSuccessful));
+	GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Green, FString::Printf(TEXT("OnStartSession Complete %s, ùd"), *SessionN.ToString(), bWasSuccessful));
 
 	IOnlineSubsystem* OnlineSub = IOnlineSubsystem::Get();
 
@@ -171,7 +171,7 @@ void AMPT_GameSession::FindSessions(TSharedPtr<const FUniqueNetId> UserId, bool 
 
 void AMPT_GameSession::OnFindSessionsComplete(bool bWasSuccessful)
 {
-	GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Red, FString::Printf(TEXT("OnFindSessionsComplete : %d"), bWasSuccessful));
+	GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Green, FString::Printf(TEXT("OnFindSessionsComplete : %d"), bWasSuccessful));
 
 	const IOnlineSubsystem* OnlineSub = IOnlineSubsystem::Get();
 
@@ -183,13 +183,13 @@ void AMPT_GameSession::OnFindSessionsComplete(bool bWasSuccessful)
 		{
 			Sessions->ClearOnFindSessionsCompleteDelegate_Handle(OnFindSessionsCompleteDelegateHandle);
 
-			GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Red, FString::Printf(TEXT("Num Search Results : %d"), SessionSearch->SearchResults.Num()));
+			GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Green, FString::Printf(TEXT("Num Search Results : %d"), SessionSearch->SearchResults.Num()));
 
 			if (SessionSearch->SearchResults.Num() > 0)
 			{
 				for (int32 SearchIndex = 0; SearchIndex < SessionSearch->SearchResults.Num(); SearchIndex++)
 				{
-					GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Red, FString::Printf(TEXT("Session Number : %d | SessionN : %s"), SearchIndex + 1, *(SessionSearch->SearchResults[SearchIndex].Session.OwningUserName)));
+					GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Green, FString::Printf(TEXT("Session Number : %d | SessionN : %s"), SearchIndex + 1, *(SessionSearch->SearchResults[SearchIndex].Session.OwningUserName)));
 				}
 			}
 		}

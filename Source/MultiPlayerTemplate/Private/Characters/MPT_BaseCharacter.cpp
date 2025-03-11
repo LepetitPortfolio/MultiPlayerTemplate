@@ -1,5 +1,6 @@
 #include "Characters/MPT_BaseCharacter.h"
 #include "GameFramework/PlayerController.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
 #include "Net/UnrealNetwork.h"
 #include "EnhancedInputComponent.h"
@@ -10,7 +11,6 @@ DEFINE_LOG_CATEGORY(LogBaseCharacter);
 AMPT_BaseCharacter::AMPT_BaseCharacter()
 {
     PrimaryActorTick.bCanEverTick = true;
-    bIsFirstPerson = true;
 
     ThirdPersonSpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("ThirdPersonSpringArm"));
     ThirdPersonSpringArm->SetupAttachment(RootComponent);
@@ -19,25 +19,70 @@ AMPT_BaseCharacter::AMPT_BaseCharacter()
 
     ThirdPersonCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("ThirdPersonCamera"));
     ThirdPersonCamera->SetupAttachment(ThirdPersonSpringArm);
+    ThirdPersonCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
+
 
     FirstPersonCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FirstPersonCamera"));
     FirstPersonCamera->SetupAttachment(RootComponent);
+    FirstPersonCamera->SetRelativeLocation(FVector(-10.f, 0.f, 60.f));
+    FirstPersonCamera->bUsePawnControlRotation = true;
 
     FirstPersonMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("FirstPersonMesh"));
     FirstPersonMesh->SetupAttachment(FirstPersonCamera);
     FirstPersonMesh->SetOnlyOwnerSee(true);
+    FirstPersonMesh->bCastDynamicShadow = false;
 
-    Health = 100.0f;
+
+    GetCharacterMovement()->bOrientRotationToMovement = true; // Character moves in the direction of input...	
+
+    
+
 }
 
 void AMPT_BaseCharacter::BeginPlay()
 {
     Super::BeginPlay();
-    SwitchCameraPointOfView(bIsFirstPerson);
+    if (m_CharacterVueTypeSetting == ECharacterVueType::TPS)
+    {
+        SwitchCameraPointOfView(false, true);
+    }
+    else
+    {
+        SwitchCameraPointOfView(true, true);
+    }
     
 }
 
 void AMPT_BaseCharacter::Move(const FInputActionValue& Value)
+{
+    if (bIsFirstPerson)
+    {
+        FPSMove(Value);
+    }
+    else
+    {
+        TPSMove(Value);
+    }
+}
+
+void AMPT_BaseCharacter::TPSMove(const FInputActionValue& Value)
+{
+    FVector2D movementVector = Value.Get<FVector2D>();
+    if (Controller)
+    {
+        const FRotator rotation = Controller->GetControlRotation();
+        const FRotator yawRotation(0, rotation.Yaw, 0);
+
+        const FVector forwardDiraction = FRotationMatrix(yawRotation).GetUnitAxis(EAxis::X);
+
+        const FVector rightDirection = FRotationMatrix(yawRotation).GetUnitAxis(EAxis::Y);
+
+        AddMovementInput(forwardDiraction * m_CurrentSpeedCoef, movementVector.Y);
+        AddMovementInput(rightDirection * m_CurrentSpeedCoef, movementVector.X);
+    }
+}
+
+void AMPT_BaseCharacter::FPSMove(const FInputActionValue& Value)
 {
     FVector2D movementVector = Value.Get<FVector2D>();
     if (Controller)
@@ -53,8 +98,8 @@ void AMPT_BaseCharacter::Look(const FInputActionValue& Value)
     FVector2D lookAxisVector = Value.Get<FVector2D>();
     if (Controller)
     {
-        AddControllerYawInput(lookAxisVector.Y);
-        AddControllerPitchInput(lookAxisVector.X);
+        AddControllerYawInput(lookAxisVector.X);
+        AddControllerPitchInput(lookAxisVector.Y);
     }
 }
 
@@ -78,7 +123,9 @@ void AMPT_BaseCharacter::ZoomCamera(const FInputActionValue& Value)
 
             if (changeLengthArm)
             {
-                ThirdPersonSpringArm->TargetArmLength = FMath::Clamp(ThirdPersonSpringArm->TargetArmLength - zoomCamera * 10.0f, m_ArmLengthMin, m_ArmLengthMax);
+                float newArmLengthDesired = ThirdPersonSpringArm->TargetArmLength + zoomCamera * 10.0f;
+                ThirdPersonSpringArm->TargetArmLength = FMath::Clamp(newArmLengthDesired, m_ArmLengthMin, m_ArmLengthMax);
+
             }
             else
             {
@@ -89,13 +136,21 @@ void AMPT_BaseCharacter::ZoomCamera(const FInputActionValue& Value)
     }
 }
 
-void AMPT_BaseCharacter::SwitchCameraPointOfView(bool _IsFirstPerson)
+void AMPT_BaseCharacter::SwitchCameraPointOfView(bool _IsFirstPerson, bool _ForceSwitch)
 {
-    bIsFirstPerson = _IsFirstPerson;
-    FirstPersonCamera->SetActive(bIsFirstPerson);
-    FirstPersonMesh->SetOwnerNoSee(!bIsFirstPerson);
-    ThirdPersonCamera->SetActive(!bIsFirstPerson);
-    GetMesh()->SetOwnerNoSee(bIsFirstPerson);
+    if ((m_CharacterVueTypeSetting == ECharacterVueType::FTPS) || (_ForceSwitch))
+    {
+        bIsFirstPerson = _IsFirstPerson;
+
+        bUseControllerRotationPitch = bIsFirstPerson;
+        bUseControllerRotationYaw = bIsFirstPerson;
+        bUseControllerRotationRoll = bIsFirstPerson;
+
+        FirstPersonCamera->SetActive(bIsFirstPerson);
+        FirstPersonMesh->SetOwnerNoSee(!bIsFirstPerson);
+        ThirdPersonCamera->SetActive(!bIsFirstPerson);
+        GetMesh()->SetOwnerNoSee(bIsFirstPerson);
+    }
 
 }
 
@@ -142,7 +197,7 @@ bool AMPT_BaseCharacter::ServerInteract_Validate()
 
 void AMPT_BaseCharacter::ServerTakeDamage_Implementation(float DamageAmount)
 {
-    Health = FMath::Clamp(Health - DamageAmount, 0.0f, 100.0f);
+    //Health = FMath::Clamp(Health - DamageAmount, 0.0f, 100.0f);
     OnHealthUpdate();
 }
 
@@ -153,10 +208,10 @@ bool AMPT_BaseCharacter::ServerTakeDamage_Validate(float DamageAmount)
 
 void AMPT_BaseCharacter::OnHealthUpdate()
 {
-    if (Health <= 0.0f)
+    /*if (Health <= 0.0f)
     {
         Destroy();
-    }
+    }*/
 }
 
 void AMPT_BaseCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -192,5 +247,5 @@ void AMPT_BaseCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 void AMPT_BaseCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-    DOREPLIFETIME(AMPT_BaseCharacter, Health);
+    //DOREPLIFETIME(AMPT_BaseCharacter, Health);
 }

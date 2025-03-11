@@ -118,6 +118,11 @@ void UMPT_JointMenu::ResultActions(const TSharedPtr<class FOnlineSessionSearch>&
 		LoadingWidget->SetIsEnabled(false);
 	}
 
+	if (RootListPanel)
+	{
+		RootListPanel->ClearChildren();
+	}
+
 	if (!bWasSuccessful)
 	{
 		return;
@@ -132,12 +137,18 @@ void UMPT_JointMenu::ResultActions(const TSharedPtr<class FOnlineSessionSearch>&
 void UMPT_JointMenu::InstentiateResultLine(FOnlineSessionSearchResult* SessionSearchResultInfos)
 {
 	UMPT_SearchResultLine* SearchResultLine =  CreateWidget<UMPT_SearchResultLine>(this, ResultLine);
-
-	SearchResultLine->InitValues(this, SessionSearchResultInfos);
-
-	if (RootListPanel)
+	if (SearchResultLine)
 	{
-		RootListPanel->AddChild(SearchResultLine);
+		SearchResultLine->InitValues(this, SessionSearchResultInfos);
+
+		if (RootListPanel)
+		{
+			RootListPanel->AddChild(SearchResultLine);
+		}
+	}
+	else
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Red, TEXT("Failed to instantiate variable SearchResultLine !!!"));
 	}
 }
 

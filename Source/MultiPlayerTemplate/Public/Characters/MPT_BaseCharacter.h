@@ -5,6 +5,7 @@
 #include "Net/UnrealNetwork.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "Enums/MPT_CharacterVueType.h"
 #include "MPT_BaseCharacter.generated.h"
 
 DECLARE_LOG_CATEGORY_EXTERN(LogBaseCharacter, Log, All);
@@ -60,13 +61,16 @@ protected:
     /**
      * Replicated health variable that stores the character's current health points.
      */
-    UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Health")
-    float Health;
+    //UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Health")
+    //float Health;
 
-    UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Camera", meta = (AllowPrivateAccess = "true"))
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera", meta = (AllowPrivateAccess = "true"))
+    ECharacterVueType m_CharacterVueTypeSetting = ECharacterVueType::FTPS;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera", meta = (AllowPrivateAccess = "true"))
     float m_ArmLengthMax = 300.0f;
 
-    UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Camera", meta = (AllowPrivateAccess = "true"))
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera", meta = (AllowPrivateAccess = "true"))
     float m_ArmLengthMin = 100.0f;
    
     UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Movement")
@@ -77,6 +81,9 @@ protected:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement")
     float m_CurrentSpeedCoef = 1.0f;
 
+    /** Boolean flag indicating whether the character is currently in first-person view. */
+    bool bIsFirstPerson;
+
     virtual void BeginPlay() override;
 
     /**
@@ -84,6 +91,11 @@ protected:
      * @param Value Movement input value (positive for forward, negative for backward).
      */
     void Move(const FInputActionValue& Value);
+
+    void TPSMove(const FInputActionValue& Value);
+
+    void FPSMove(const FInputActionValue& Value);
+
 
     /** 
     * Called for looking input 
@@ -93,9 +105,10 @@ protected:
     /**
     * Called for looking input
     */
+    UFUNCTION()
     void ZoomCamera(const FInputActionValue& Value);
 
-    void SwitchCameraPointOfView(bool _IsFirstPerson);
+    void SwitchCameraPointOfView(bool _IsFirstPerson, bool _ForceSwitch = false);
 
     /** Initiates the character jump action when the jump key is pressed. */
     void StartJump();
@@ -146,17 +159,7 @@ protected:
     void ServerTakeDamage(float DamageAmount);
     void ServerTakeDamage_Implementation(float DamageAmount);
     bool ServerTakeDamage_Validate(float DamageAmount);
-
    
-
-    /**
-     * Adjusts the camera field of view for first-person mode or modifies the third-person camera distance.
-     * @param Value Input value for zooming (positive to zoom in, negative to zoom out).
-     */
-    void ZoomCamera(float Value);
-
-    /** Boolean flag indicating whether the character is currently in first-person view. */
-    bool bIsFirstPerson;
 
 public:
     AMPT_BaseCharacter();
