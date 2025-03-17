@@ -20,5 +20,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LevelInfos")
 	TSoftObjectPtr<UWorld> Level = nullptr;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LevelInfos")
+	TSubclassOf<APawn> DefaultPawnClass = nullptr;
+
 	FMPT_LevelInfos() {}
 };

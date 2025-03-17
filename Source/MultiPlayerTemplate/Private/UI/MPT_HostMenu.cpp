@@ -20,7 +20,7 @@ void UMPT_HostMenu::NativeConstruct()
 		MapName = MapInfosSelected->LevelName.ToString();
 	}
 
-	PlayersMax = 4;
+	PlayersMax = 32;
 }
 
 void UMPT_HostMenu::NativeDestruct()
@@ -31,9 +31,9 @@ void UMPT_HostMenu::NativeDestruct()
 void UMPT_HostMenu::MorePlayer()
 {
 	PlayersMax++;
-	if (PlayersMax > 4)
+	if (PlayersMax > 32)
 	{
-		PlayersMax = 4;
+		PlayersMax = 32;
 	}
 }
 

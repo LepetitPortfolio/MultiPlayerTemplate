@@ -31,7 +31,7 @@ protected:
 	bool IsLAN;
 	/* Player max in the Game Session */
 	UPROPERTY(BlueprintReadOnly, Category = HostMenu)
-	int PlayersMax = 4;
+	int PlayersMax = 32;
 
 	/* Index of Map */
 	UPROPERTY()

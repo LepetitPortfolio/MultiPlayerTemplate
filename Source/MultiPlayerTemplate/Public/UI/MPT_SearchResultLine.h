@@ -43,7 +43,7 @@ protected:
 	int32 PlayerConnected = 0;
 	/* Number of player max connected */
 	UPROPERTY(BlueprintReadWrite, Category = SearchResultLine)
-	int32 MaxPlayer = 4;
+	int32 MaxPlayer = 32;
 	
 	/* Infos of game session */
 	FMPT_SessionInfos SessionInfos;

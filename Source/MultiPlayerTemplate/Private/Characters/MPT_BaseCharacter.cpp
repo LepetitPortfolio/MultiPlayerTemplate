@@ -19,8 +19,7 @@ AMPT_BaseCharacter::AMPT_BaseCharacter()
 
     ThirdPersonCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("ThirdPersonCamera"));
     ThirdPersonCamera->SetupAttachment(ThirdPersonSpringArm);
-    ThirdPersonCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
-
+    ThirdPersonCamera->bUsePawnControlRotation = false;
 
     FirstPersonCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FirstPersonCamera"));
     FirstPersonCamera->SetupAttachment(RootComponent);
@@ -31,17 +30,29 @@ AMPT_BaseCharacter::AMPT_BaseCharacter()
     FirstPersonMesh->SetupAttachment(FirstPersonCamera);
     FirstPersonMesh->SetOnlyOwnerSee(true);
     FirstPersonMesh->bCastDynamicShadow = false;
+    FirstPersonMesh->CastShadow = false;
 
-
-    GetCharacterMovement()->bOrientRotationToMovement = true; // Character moves in the direction of input...	
-
-    
-
+    GetCharacterMovement()->bOrientRotationToMovement = true; 
 }
 
 void AMPT_BaseCharacter::BeginPlay()
 {
     Super::BeginPlay();
+    InitializeCameraTypeMode();
+    
+}
+
+void AMPT_BaseCharacter::InitializeCameraTypeMode()
+{
+    if (!IsLocallyControlled())
+    {
+        FirstPersonCamera->SetActive(false);
+        FirstPersonMesh->SetOwnerNoSee(false);
+        ThirdPersonCamera->SetActive(false);
+        GetMesh()->SetOwnerNoSee(false);
+        return;
+    }
+
     if (m_CharacterVueTypeSetting == ECharacterVueType::TPS)
     {
         SwitchCameraPointOfView(false, true);
@@ -50,7 +61,6 @@ void AMPT_BaseCharacter::BeginPlay()
     {
         SwitchCameraPointOfView(true, true);
     }
-    
 }
 
 void AMPT_BaseCharacter::Move(const FInputActionValue& Value)
@@ -185,16 +195,6 @@ bool AMPT_BaseCharacter::ServerFire_Validate()
     return true;
 }
 
-void AMPT_BaseCharacter::ServerInteract_Implementation()
-{
-    // Logic to interact with objects
-}
-
-bool AMPT_BaseCharacter::ServerInteract_Validate()
-{
-    return true;
-}
-
 void AMPT_BaseCharacter::ServerTakeDamage_Implementation(float DamageAmount)
 {
     //Health = FMath::Clamp(Health - DamageAmount, 0.0f, 100.0f);
@@ -223,8 +223,7 @@ void AMPT_BaseCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
         enhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &AMPT_BaseCharacter::StartJump);
         enhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &AMPT_BaseCharacter::StopJump);
 
-        enhancedInputComponent->BindAction(ActionInput, ETriggerEvent::Started, this, &AMPT_BaseCharacter::ServerInteract);
-        //enhancedInputComponent->BindAction(FireInput, ETriggerEvent::Triggered, this, &AMPT_BaseCharacter::ServerFire);
+        enhancedInputComponent->BindAction(FireInput, ETriggerEvent::Triggered, this, &AMPT_BaseCharacter::ServerFire);
 
         enhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AMPT_BaseCharacter::Move);
 

@@ -43,7 +43,7 @@ protected:
     UInputAction* JumpAction;
 
     UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Input, meta = (AllowPrivateAccess = "true"))
-    UInputAction* ActionInput;
+    UInputAction* FireInput;
 
     /** Move Input Action */
     UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Input, meta = (AllowPrivateAccess = "true"))
@@ -85,6 +85,8 @@ protected:
     bool bIsFirstPerson;
 
     virtual void BeginPlay() override;
+
+    void InitializeCameraTypeMode();
 
     /**
      * Handles character movement forward and backward.
@@ -135,16 +137,6 @@ protected:
     void ServerFire();
     void ServerFire_Implementation();
     bool ServerFire_Validate();
-
-    /**
-     * Server-side function to handle interactions with objects in the game world.
-     * No parameters.
-     */
-    UFUNCTION(Server, Reliable, WithValidation)
-    void ServerInteract();
-    void ServerInteract_Implementation();
-    bool ServerInteract_Validate();
-
     
 
     /** Updates health and checks if the character should be destroyed upon depletion. */
