@@ -214,6 +214,3 @@ git clone https://github.com/LepetitPortfolio/MultiPlayerTemplate.git
 - `MPT_GameModeBase` / `MPT_PlayerState` / `FMPT_PlayerPawnData` sont des squelettes prêts à étendre.
 - Backend en ligne : NULL/LAN par défaut ; l'intégration EOS est préparée mais non configurée.
 
-## 📄 Licence
-
-Code de base généré par le template Epic Games (en-têtes "Copyright Epic Games, Inc.") — le reste du projet appartient à son auteur. Ajoutez ici votre licence (ex. MIT) avant toute redistribution.
